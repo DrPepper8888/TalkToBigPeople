@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="title">与智者对话</view>
+  <view class="subtitle">选择一位伟人，和他聊聊天吧</view>
+
+  <!-- 自定义人物创建按钮 -->
+  <view class="create-section">
+    <button class="create-btn" bindtap="goToCreate">+ 创建自定义人物</button>
+  </view>
+
+  <!-- 内置智者 -->
+  <view wx:if="{{builtinPeople.length > 0}}" class="section">
+    <view class="section-title">内置智者</view>
+    <view class="list">
+      <view class="item" wx:for="{{builtinPeople}}" wx:key="id" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
+        <view class="name">{{item.name}}</view>
+        <view class="desc">{{item.description}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 自定义人物 -->
+  <view wx:if="{{customPeople.length > 0}}" class="section">
+    <view class="section-title">我的自定义人物</view>
+    <view class="list">
+      <view class="item custom-item" wx:for="{{customPeople}}" wx:key="id">
+        <view class="item-content" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
+          <view class="name">{{item.name}}</view>
+          <view class="desc">{{item.description}}</view>
+        </view>
+        <view class="delete-btn" bindtap="deletePerson" data-id="{{item.id}}" data-name="{{item.name}}">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer" wx:if="{{!loading}}">
+    <text class="tips">基于大语言模型模仿风格，AI生成内容仅供参考</text>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

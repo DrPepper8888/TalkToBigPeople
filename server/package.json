@@ -1,0 +1,27 @@
+{
+  "name": "talk-great-server",
+  "version": "1.0.0",
+  "description": "Backend for Talk with Great People miniprogram",
+  "main": "index.js",
+ "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.7",
+    "openai": "^4.28.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "keywords": [
+    "ai",
+    "chat",
+    "miniprogram",
+    "great-people"
+  ],
+  "author": "辛昊洋",
+  "license": "MIT"
+}

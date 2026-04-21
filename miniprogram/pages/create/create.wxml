@@ -1,0 +1,48 @@
+<view class="container">
+  <view class="form">
+    <view class="form-item">
+      <text class="label">人物名称 *</text>
+      <input class="input" placeholder="请输入人物名称" value="{{name}}" bindinput="onNameInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">简短描述 *</text>
+      <input class="input" placeholder="一句话描述这个人物" value="{{description}}" bindinput="onDescInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">人物传记/核心思想</text>
+      <textarea class="textarea" placeholder="详细介绍这个人物的生平、核心思想、性格特点" value="{{biography}}" bindinput="onBioInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">名人名言（每行一句）</text>
+      <textarea class="textarea" placeholder="比如：&#10;「但愿人长久，千里共婵娟。」&#10;「不识庐山真面目，只缘身在此山中。」" value="{{famousQuotesText}}" bindinput="onQuotesInput" />
+    </view>
+
+    <view class="section-title">
+      <text>核心作品</text>
+      <button class="add-btn" bindtap="addWork">+ 添加作品</button>
+    </view>
+
+    <view class="work-item" wx:for="{{works}}" wx:key="index">
+      <view class="work-header">
+        <text>作品 {{index + 1}}</text>
+        <text class="delete" bindtap="deleteWork" data-index="{{index}}">删除</text>
+      </view>
+      <input class="input-sm" placeholder="作品标题" value="{{item.title}}" bindinput="onWorkTitleInput" data-index="{{index}}" />
+      <text class="label-sm">原文</text>
+      <textarea class="textarea-sm" placeholder="作品原文" value="{{item.originalText}}" bindinput="onWorkOriginalInput" data-index="{{index}}" />
+      <text class="label-sm">现代文翻译</text>
+      <textarea class="textarea-sm" placeholder="翻译成现代文方便理解" value="{{item.modernTranslation}}" bindinput="onWorkTranslationInput" data-index="{{index}}" />
+      <text class="label-sm">注释/背景说明</text>
+      <textarea class="textarea-sm" placeholder="这篇作品的创作背景、中心思想说明" value="{{item.explanation}}" bindinput="onWorkExplanationInput" data-index="{{index}}" />
+    </view>
+
+    <view class="tips">
+      <text>* 标记为必填项，名人名言和作品可以留空，后续再补充</text>
+    </view>
+
+    <button class="submit-btn" type="primary" bindtap="submit" loading="{{submitting}}">{{submitting ? '创建中...' : '创建人物'}}</button>
+  </view>
+</view>

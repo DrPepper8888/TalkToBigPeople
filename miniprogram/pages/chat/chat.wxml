@@ -1,0 +1,17 @@
+<view class="container">
+  <scroll-view class="chat-container" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltoupper="loadEarlier" scroll-top="{{scrollTop}}">
+    <view class="message-list">
+      <view class="message-item {{item.role === 'user' ? 'user' : 'assistant'}}" wx:for="{{messages}}" wx:key="id">
+        <view class="message-content">{{item.content}}</view>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading">
+      <text>{{personName}}正在思考...</text>
+    </view>
+  </scroll-view>
+
+  <view class="input-bar">
+    <input class="input" placeholder="输入你的问题..." value="{{inputValue}}" bindinput="onInput" bindconfirm="sendMessage" />
+    <button class="send-btn" bindtap="sendMessage" disabled="{{loading}}">发送</button>
+  </view>
+</view>
