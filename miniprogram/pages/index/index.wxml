@@ -2,41 +2,100 @@
   <view class="title">与智者对话</view>
   <view class="subtitle">选择一位伟人，和他聊聊天吧</view>
 
-  <!-- 自定义人物创建按钮 -->
-  <view class="create-section">
-    <button class="create-btn" bindtap="goToCreate">+ 创建自定义人物</button>
-  </view>
-
-  <!-- 内置智者 -->
-  <view wx:if="{{builtinPeople.length > 0}}" class="section">
-    <view class="section-title">内置智者</view>
-    <view class="list">
-      <view class="item" wx:for="{{builtinPeople}}" wx:key="id" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
-        <view class="name">{{item.name}}</view>
-        <view class="desc">{{item.description}}</view>
-      </view>
+  <!-- 骨架屏加载状态 -->
+  <view class="skeleton-container" wx:if="{{loading}}">
+    <view class="skeleton-btn"></view>
+    <view class="skeleton-section">
+      <view class="skeleton-title"></view>
+      <view class="skeleton-item"></view>
+      <view class="skeleton-item"></view>
+      <view class="skeleton-item"></view>
+    </view>
+    <view class="skeleton-section">
+      <view class="skeleton-title"></view>
+      <view class="skeleton-item"></view>
+      <view class="skeleton-item"></view>
     </view>
   </view>
 
-  <!-- 自定义人物 -->
-  <view wx:if="{{customPeople.length > 0}}" class="section">
-    <view class="section-title">我的自定义人物</view>
-    <view class="list">
-      <view class="item custom-item" wx:for="{{customPeople}}" wx:key="id">
-        <view class="item-content" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
+  <!-- 加载错误 + 重试 -->
+  <view class="error-state" wx:if="{{!loading && loadError}}">
+    <text class="error-icon">🔌</text>
+    <text class="error-title">连接失败</text>
+    <text class="error-desc">{{loadError}}</text>
+    <button class="retry-btn" bindtap="loadPeople">重新连接</button>
+  </view>
+
+  <!-- 正常内容 -->
+  <view wx:if="{{!loading && !loadError}}">
+    <!-- 自定义人物创建按钮 -->
+    <view class="create-section">
+      <button class="create-btn" bindtap="goToCreate">+ 创建自定义人物</button>
+    </view>
+
+    <!-- 数据管理工具栏 -->
+    <view class="toolbar" wx:if="{{customPeople.length > 0}}">
+      <text class="toolbar-title">数据管理</text>
+      <view class="toolbar-btns">
+        <button class="tool-btn export" bindtap="exportData">📤 导出</button>
+        <button class="tool-btn import" bindtap="showImportDialog">📥 导入</button>
+      </view>
+    </view>
+
+    <!-- 内置智者 -->
+    <view wx:if="{{builtinPeople.length > 0}}" class="section">
+      <view class="section-title">✨ 内置智者</view>
+      <view class="list">
+        <view class="item" wx:for="{{builtinPeople}}" wx:key="id" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
           <view class="name">{{item.name}}</view>
           <view class="desc">{{item.description}}</view>
+          <text class="built-badge">内置</text>
         </view>
-        <view class="delete-btn" bindtap="deletePerson" data-id="{{item.id}}" data-name="{{item.name}}">删除</view>
       </view>
+    </view>
+
+    <!-- 自定义人物 -->
+    <view wx:if="{{customPeople.length > 0}}" class="section">
+      <view class="section-title">🎭 我的自定义人物</view>
+      <view class="list">
+        <view class="item custom-item" wx:for="{{customPeople}}" wx:key="id">
+          <view class="item-content" bindtap="selectPerson" data-id="{{item.id}}" data-name="{{item.name}}">
+            <view class="name">{{item.name}}</view>
+            <view class="desc">{{item.description}}</view>
+          </view>
+          <view class="delete-btn" bindtap="deletePerson" data-id="{{item.id}}" data-name="{{item.name}}">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{builtinPeople.length === 0 && customPeople.length === 0}}">
+      <text class="empty-icon">🤔</text>
+      <text class="empty-text">暂无名人数据</text>
+      <text class="empty-desc">点击"创建自定义人物"开始使用吧</text>
+    </view>
+
+    <view class="footer">
+      <text class="tips">基于大语言模型模仿风格，AI生成内容仅供参考</text>
     </view>
   </view>
 
-  <view class="footer" wx:if="{{!loading}}">
-    <text class="tips">基于大语言模型模仿风格，AI生成内容仅供参考</text>
-  </view>
-
-  <view class="loading" wx:if="{{loading}}">
-    <text>加载中...</text>
+  <!-- 导入对话框 -->
+  <view class="dialog-overlay" wx:if="{{showImportDialog}}" catchtap="hideImportDialog">
+    <view class="dialog-content" catchtap="stopPropagation">
+      <view class="dialog-header">
+        <text class="dialog-title">📥 导入名人数据</text>
+        <text class="dialog-close" catchtap="hideImportDialog">×</text>
+      </view>
+      <view class="dialog-body">
+        <text class="dialog-hint">请粘贴 JSON 格式的名人数据，支持批量导入：</text>
+        <textarea class="import-textarea" placeholder='[{"id": "xxx", "name": "xxx", "description": "xxx", "famousQuotes": [], "works": [], "biography": "xxx"}]' value="{{importJsonText}}" bindinput="onImportInput" auto-height maxlength="50000"></textarea>
+        <text class="dialog-tips">💡 导出的数据可以直接粘贴到这里导入</text>
+      </view>
+      <view class="dialog-actions">
+        <button class="dialog-btn cancel" bindtap="hideImportDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="doImport" loading="{{importing}}">确认导入</button>
+      </view>
+    </view>
   </view>
 </view>

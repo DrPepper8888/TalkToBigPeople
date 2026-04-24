@@ -70,18 +70,100 @@ function generateSystemPrompt(person) {
 // 初始加载数据
 let greatPeople = loadAllPeople();
 
-// 获取伟人列表（返回所有精简信息用于列表展示）
+// 获取伟人列表（返回完整信息，方便导出和编辑）
 app.get('/api/people', (req, res) => {
   const list = greatPeople.map(p => ({
     id: p.id,
     name: p.name,
     description: p.description,
+    biography: p.biography,
+    famousQuotes: p.famousQuotes,
+    works: p.works,
     isBuiltin: p.isBuiltin
   }));
   res.json({
     code: 0,
     data: list
   });
+});
+
+// 获取单个伟人的完整信息
+app.get('/api/people/:id', (req, res) => {
+  const person = greatPeople.find(p => p.id === req.params.id);
+  if (!person) {
+    return res.json({
+      code: 1,
+      message: '未找到该人物'
+    });
+  }
+  res.json({
+    code: 0,
+    data: person
+  });
+});
+
+// 批量导入自定义人物
+app.post('/api/people/import', (req, res) => {
+  try {
+    const { people } = req.body;
+    if (!Array.isArray(people)) {
+      return res.json({
+        code: 1,
+        message: '数据格式错误，应为数组'
+      });
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    const results = [];
+
+    for (const person of people) {
+      if (!person.name || !person.description) {
+        results.push({ name: person.name, success: false, message: '缺少 name 或 description' });
+        failCount++;
+        continue;
+      }
+
+      // 生成唯一 ID
+      let id = person.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      let finalId = id;
+      let counter = 1;
+      while (greatPeople.find(p => p.id === finalId)) {
+        finalId = `${id}-${counter}`;
+        counter++;
+      }
+
+      const newPerson = {
+        id: finalId,
+        name: person.name,
+        description: person.description,
+        isBuiltin: false,
+        famousQuotes: person.famousQuotes || [],
+        works: person.works || [],
+        biography: person.biography || ''
+      };
+
+      greatPeople.push(newPerson);
+      results.push({ name: person.name, success: true, id: finalId });
+      successCount++;
+    }
+
+    // 保存数据
+    saveAllPeople(greatPeople);
+
+    res.json({
+      code: 0,
+      data: {
+        successCount,
+        failCount,
+        results
+      },
+      message: `成功导入 ${successCount} 位${failCount > 0 ? `，失败 ${failCount} 位` : ''}`
+    });
+  } catch (err) {
+    console.error('导入失败:', err);
+    res.status(500).json({ code: 1, message: err.message });
+  }
 });
 
 // 创建自定义名人

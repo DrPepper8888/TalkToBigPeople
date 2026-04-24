@@ -1,17 +1,58 @@
 <view class="container">
-  <scroll-view class="chat-container" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltoupper="loadEarlier" scroll-top="{{scrollTop}}">
+  <scroll-view class="chat-container" scroll-y scroll-top="{{scrollTop}}" scroll-with-animation>
+    <!-- 欢迎语（无消息时显示） -->
+    <view class="welcome-section" wx:if="{{messages.length === 0}}">
+      <view class="welcome-avatar">{{personName.charAt(0)}}</view>
+      <view class="welcome-title">你好，我是{{personName}}</view>
+      <view class="welcome-desc">有什么想和我聊聊的吗？</view>
+    </view>
+
+    <!-- 消息列表 -->
     <view class="message-list">
-      <view class="message-item {{item.role === 'user' ? 'user' : 'assistant'}}" wx:for="{{messages}}" wx:key="id">
-        <view class="message-content">{{item.content}}</view>
+      <view class="message-item {{item.role}}" wx:for="{{messages}}" wx:key="id">
+        <view class="avatar">{{item.role === 'user' ? '你' : personName.charAt(0)}}</view>
+        <view class="message-content">
+          <view class="message-bubble">
+            <text wx:if="{{item.generating}}" class="generating-dot">正在输入...</text>
+            <text wx:else>{{item.content}}</text>
+          </view>
+          <view class="message-time">{{item.time}}</view>
+        </view>
       </view>
     </view>
-    <view wx:if="{{loading}}" class="loading">
-      <text>{{personName}}正在思考...</text>
-    </view>
+
+    <!-- 底部留白，避免被输入框挡住 -->
+    <view class="bottom-space"></view>
   </scroll-view>
 
+  <!-- 聊天输入栏 -->
   <view class="input-bar">
-    <input class="input" placeholder="输入你的问题..." value="{{inputValue}}" bindinput="onInput" bindconfirm="sendMessage" />
-    <button class="send-btn" bindtap="sendMessage" disabled="{{loading}}">发送</button>
+    <button class="clear-btn" bindtap="showClearConfirm" wx:if="{{messages.length > 0}}">🗑️</button>
+    <textarea
+      class="input-area"
+      placeholder="输入你想说的话..."
+      value="{{inputValue}}"
+      bindinput="onInput"
+      bindconfirm="sendMessage"
+      confirm-type="send"
+      auto-height
+      maxlength="2000"
+      disabled="{{loading}}"
+    ></textarea>
+    <button
+      class="send-btn {{loading || !inputValue.trim() ? 'disabled' : ''}}"
+      bindtap="sendMessage"
+      loading="{{loading}}"
+      disabled="{{loading || !inputValue.trim()}}"
+    >
+      发送
+    </button>
+  </view>
+
+  <!-- 网络错误提示条 -->
+  <view class="error-bar" wx:if="{{networkError}}" bindtap="dismissError">
+    <text class="error-bar-icon">⚠️</text>
+    <text class="error-bar-text">{{networkError}}</text>
+    <text class="error-bar-close">×</text>
   </view>
 </view>
